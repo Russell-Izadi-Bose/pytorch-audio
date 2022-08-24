@@ -16,9 +16,11 @@ from .tedlium import TEDLIUM
 from .vctk import VCTK_092
 from .voxceleb1 import VoxCeleb1Identification, VoxCeleb1Verification
 from .yesno import YESNO
+from .bbc import BBC
 
 
 __all__ = [
+    "BBC",
     "COMMONVOICE",
     "LIBRISPEECH",
     "LibriLightLimited",
