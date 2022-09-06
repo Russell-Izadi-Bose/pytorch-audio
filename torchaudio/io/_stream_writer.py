@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 
 import torch
+import torchaudio
 
 
 def _format_doc(**kwargs):
@@ -50,7 +51,16 @@ class StreamWriter:
 
     Args:
         dst (str): The destination where the encoded data are written.
-            The supported value depends on the FFmpeg found in the system.
+            If string-type, it must be a resource indicator that FFmpeg can
+            handle. The supported value depends on the FFmpeg found in the system.
+
+            If file-like object, it must support `write` method with the signature
+            `write(data: bytes) -> int`.
+
+            Please refer to the following for the expected signature and behavior of
+            `write` method.
+
+            - https://docs.python.org/3/library/io.html#io.BufferedIOBase.write
 
         format (str or None, optional):
             Override the output format, or specify the output media device.
@@ -81,14 +91,25 @@ class StreamWriter:
                https://ffmpeg.org/ffmpeg-devices.html#Output-Devices
 
                Use `ffmpeg -devices` to list the values available in the current environment.
+
+        buffer_size (int):
+            The internal buffer size in byte. Used only when `dst` is a file-like object.
+
+            Default: `4096`.
     """
 
     def __init__(
         self,
         dst: str,
         format: Optional[str] = None,
+        buffer_size: int = 4096,
     ):
-        self._s = torch.classes.torchaudio.ffmpeg_StreamWriter(dst, format)
+        if isinstance(dst, str):
+            self._s = torch.classes.torchaudio.ffmpeg_StreamWriter(dst, format)
+        elif hasattr(dst, "write"):
+            self._s = torchaudio._torchaudio_ffmpeg.StreamWriterFileObj(dst, format, buffer_size)
+        else:
+            raise ValueError("`dst` must be either a string or a file-like object.")
         self._is_open = False
 
     @_format_common_args
@@ -138,6 +159,7 @@ class StreamWriter:
         encoder: Optional[str] = None,
         encoder_option: Optional[Dict[str, str]] = None,
         encoder_format: Optional[str] = None,
+        hw_accel: Optional[str] = None,
     ):
         """Add an output video stream.
 
@@ -168,8 +190,18 @@ class StreamWriter:
             encoder_option (dict or None, optional): {encoder_option}
 
             encoder_format (str or None, optional): {encoder_format}
+
+            hw_accel (str or None, optional): Enable hardware acceleration.
+
+                When video is encoded on CUDA hardware, for example
+                `encoder="h264_nvenc"`, passing CUDA device indicator to `hw_accel`
+                (i.e. `hw_accel="cuda:0"`) will make StreamWriter expect video
+                chunk to be CUDA Tensor. Passing CPU Tensor will result in an error.
+
+                If `None`, the video chunk Tensor has to be CPU Tensor.
+                Default: ``None``.
         """
-        self._s.add_video_stream(frame_rate, width, height, format, encoder, encoder_option, encoder_format)
+        self._s.add_video_stream(frame_rate, width, height, format, encoder, encoder_option, encoder_format, hw_accel)
 
     def set_metadata(self, metadata: Dict[str, str]):
         """Set file-level metadata
