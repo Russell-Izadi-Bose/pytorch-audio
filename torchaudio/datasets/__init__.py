@@ -17,10 +17,11 @@ from .vctk import VCTK_092
 from .voxceleb1 import VoxCeleb1Identification, VoxCeleb1Verification
 from .yesno import YESNO
 from .bbc import BBC
-
+from .transform import Transform
 
 __all__ = [
     "BBC",
+    "Transform",
     "COMMONVOICE",
     "LIBRISPEECH",
     "LibriLightLimited",
