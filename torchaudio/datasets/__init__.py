@@ -20,8 +20,6 @@ from .bbc import BBC
 from .transform import Transform
 
 __all__ = [
-    "BBC",
-    "Transform",
     "COMMONVOICE",
     "LIBRISPEECH",
     "LibriLightLimited",
@@ -41,4 +39,6 @@ __all__ = [
     "FluentSpeechCommands",
     "VoxCeleb1Identification",
     "VoxCeleb1Verification",
+    "BBC",
+    "Transform",
 ]
