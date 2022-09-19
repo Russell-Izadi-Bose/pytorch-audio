@@ -15,14 +15,12 @@ class Transform(Dataset):
             self,
             dataset,
             transform,
-            index: int = None,
-            dtype=torch.float32) -> None:
+            index: int = None) -> None:
         super().__init__()
 
         self.dataset = dataset
         self.transform = transform
         self.index = index
-        self.dtype = dtype
 
     def __getitem__(self, i: int):
         sample = self.dataset[i]
